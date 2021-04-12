@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:farm_excess/values/my_colors.dart';
+import 'package:farm_excess/widgets/state_notifier.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,6 +24,8 @@ class _AddAdState extends State<AddAd> {
   TextEditingController _locationController;
   String locationErrorText;
 
+  StateNotifier stateNotifier = StateNotifier();
+
   CollectionReference ads = FirebaseFirestore.instance.collection('ads');
 
   void _openCamera(BuildContext context) async {
@@ -33,7 +36,9 @@ class _AddAdState extends State<AddAd> {
     setState(() {
       imageFile = pickedFile;
     });
+    stateNotifier.changeState("loading");
     uploadImageToFirebase(context);
+    stateNotifier.changeState("done");
   }
 
   void _openGallery(BuildContext context) async {
@@ -109,7 +114,11 @@ class _AddAdState extends State<AddAd> {
   }
 
   void addAd(
-      {String title, String description, String location, String imageUrl}) {
+      {@required String title,
+      @required String description,
+      @required String location,
+      @required String imageUrl,
+      @required CollectionReference adsRef}) {
     if (title == "") {
       setState(() {
         titleErrorText = "Please enter a title;";
@@ -133,7 +142,7 @@ class _AddAdState extends State<AddAd> {
       return;
     }
 
-    ads
+    adsRef
         .add({
           'title': title,
           'description': description,
@@ -164,6 +173,7 @@ class _AddAdState extends State<AddAd> {
               controller: _titleController,
               decoration: InputDecoration(
                 labelText: "Title",
+                errorText: titleErrorText,
                 border: OutlineInputBorder(),
               ),
             ),
@@ -172,39 +182,72 @@ class _AddAdState extends State<AddAd> {
               controller: _locationController,
               decoration: InputDecoration(
                 labelText: "Location",
+                errorText: locationErrorText,
                 border: OutlineInputBorder(),
               ),
             ),
             SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              minLines: 3,
-              maxLines: 10,
-              decoration:
-                  InputDecoration(labelText: "Description", errorText: ""
-                      // border: OutlineInputBorder(),
-                      ),
+            Column(
+              children: [
+                Text("Description"),
+                TextField(
+                  controller: _descriptionController,
+                  minLines: 3,
+                  maxLines: 10,
+                  decoration: InputDecoration(errorText: descriptionErrorText),
+                ),
+              ],
             ),
             SizedBox(height: 64),
-            Center(
-              child: Container(
-                margin: EdgeInsets.all(12),
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                    border: Border.all(color: MyColors.lighttaupe, width: 2)),
-                child: InkWell(
-                  onTap: () => _showChoiceDialog(context),
-                  child: Icon(
-                    Icons.image,
-                    color: MyColors.lighttaupe,
-                    size: 64,
+            ValueListenableBuilder(
+              valueListenable: stateNotifier.state,
+              builder: (context, value, child) {
+                if (value == "initial") {
+                  return Center(
+                    child: Container(
+                      margin: EdgeInsets.all(12),
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: MyColors.lighttaupe, width: 2)),
+                      child: InkWell(
+                        onTap: () => _showChoiceDialog(context),
+                        child: Icon(
+                          Icons.image,
+                          color: MyColors.lighttaupe,
+                          size: 64,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                if (value == "done") {
+                  return Container(
+                    height: 300,
+                    child: Image.file(File(imageFile.path)),
+                  );
+                }
+
+                return Container(
+                  height: 300,
+                  width: double.infinity,
+                  child: Center(
+                    child: CircularProgressIndicator(),
                   ),
-                ),
-              ),
+                );
+              },
             ),
             MaterialButton(
-              onPressed: () {},
+              onPressed: () {
+                addAd(
+                    title: _titleController.text,
+                    description: _descriptionController.text,
+                    location: _locationController.text,
+                    imageUrl: imageDownloadUrl,
+                    adsRef: ads);
+              },
               child: Text("Create New Ad"),
             )
           ],
