@@ -1,3 +1,4 @@
+import 'package:farm_excess/screens/add_ad.dart';
 import 'package:farm_excess/values/my_colors.dart';
 import 'package:farm_excess/widgets/list_item.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,8 @@ class Home extends StatelessWidget {
       backgroundColor: MyColors.lightgrey,
       floatingActionButton: FloatingActionButton(
         backgroundColor: MyColors.mughalgreen,
-        onPressed: () {},
+        onPressed: () => Navigator.push(
+            context, MaterialPageRoute(builder: (context) => AddAd())),
         child: Icon(
           Icons.add,
         ),
