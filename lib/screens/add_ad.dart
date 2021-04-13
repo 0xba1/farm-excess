@@ -23,10 +23,12 @@ class _AddAdState extends State<AddAd> {
   String descriptionErrorText;
   TextEditingController _locationController;
   String locationErrorText;
+  TextEditingController _emailController;
+  String emailErrorText;
 
   StateNotifier stateNotifier = StateNotifier();
 
-  CollectionReference ads = FirebaseFirestore.instance.collection('ads');
+  CollectionReference adsRef = FirebaseFirestore.instance.collection('ads');
 
   void _openCamera(BuildContext context) async {
     // To choose image by taking a photo with a camera
@@ -129,6 +131,7 @@ class _AddAdState extends State<AddAd> {
       @required String description,
       @required String location,
       @required String imageUrl,
+      @required String email,
       @required CollectionReference adsRef}) {
     if (title == "") {
       setState(() {
@@ -144,7 +147,13 @@ class _AddAdState extends State<AddAd> {
     }
     if (location == "") {
       setState(() {
-        locationErrorText = "Please enter a location;";
+        emailErrorText = "Please enter a location;";
+      });
+      return;
+    }
+    if (email == "") {
+      setState(() {
+        locationErrorText = "Please enter an email;";
       });
       return;
     }
@@ -158,6 +167,7 @@ class _AddAdState extends State<AddAd> {
       'description': description,
       'location': location,
       'imageUrl': imageUrl,
+      'email': email,
       'timestamp': Timestamp.now().microsecondsSinceEpoch
     }).then((value) {
       print("Ads Added");
@@ -171,6 +181,7 @@ class _AddAdState extends State<AddAd> {
     _titleController = TextEditingController();
     _descriptionController = TextEditingController();
     _locationController = TextEditingController();
+    _emailController = TextEditingController();
   }
 
   @override
@@ -188,6 +199,18 @@ class _AddAdState extends State<AddAd> {
                 decoration: InputDecoration(
                   labelText: "Title",
                   errorText: titleErrorText,
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            Container(
+              margin: EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: "Email",
+                  errorText: emailErrorText,
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -248,6 +271,7 @@ class _AddAdState extends State<AddAd> {
                 if (value == "done") {
                   return Container(
                     height: 300,
+                    width: 300,
                     child: InkWell(
                         onTap: () => _showChoiceDialog(context),
                         child: Image.file(File(imageFile.path))),
@@ -258,7 +282,7 @@ class _AddAdState extends State<AddAd> {
                   onTap: () => _showChoiceDialog(context),
                   child: Container(
                     height: 300,
-                    width: double.infinity,
+                    width: 300,
                     child: Center(
                       child: CircularProgressIndicator(),
                     ),
@@ -273,7 +297,8 @@ class _AddAdState extends State<AddAd> {
                     description: _descriptionController.text,
                     location: _locationController.text,
                     imageUrl: imageDownloadUrl,
-                    adsRef: ads);
+                    email: _emailController.text,
+                    adsRef: adsRef);
               },
               child: Text("Create New Ad"),
             )

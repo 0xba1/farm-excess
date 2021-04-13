@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:farm_excess/screens/image_show.dart';
 import 'package:farm_excess/values/my_colors.dart';
 import 'package:flutter/material.dart';
@@ -5,13 +6,19 @@ import 'package:flutter/material.dart';
 class ListItem extends StatelessWidget {
   const ListItem({
     Key key,
-    @required this.image,
+    @required this.imageUrl,
     this.location,
     this.title,
+    this.description,
+    this.email,
+    this.timestamp,
   }) : super(key: key);
-  final Image image;
+  final String imageUrl;
   final String location;
   final String title;
+  final String description;
+  final String email;
+  final int timestamp;
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +49,16 @@ class ListItem extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => ShowImage(image: image)))
+                              builder: (context) =>
+                                  ShowImage(imageUrl: imageUrl)))
                     },
                     child: ClipRRect(
-                      child: image,
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        placeholder: (_, __) => Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     splashColor: MyColors.greytaupe,
