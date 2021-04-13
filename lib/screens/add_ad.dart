@@ -37,8 +37,8 @@ class _AddAdState extends State<AddAd> {
       imageFile = pickedFile;
     });
     stateNotifier.changeState("loading");
-    uploadImageToFirebase(context);
-    stateNotifier.changeState("done");
+    await uploadImageToFirebase(context);
+    if (imageDownloadUrl != "") stateNotifier.changeState("done");
   }
 
   void _openGallery(BuildContext context) async {
@@ -49,7 +49,9 @@ class _AddAdState extends State<AddAd> {
     setState(() {
       imageFile = pickedFile;
     });
-    uploadImageToFirebase(context);
+    stateNotifier.changeState("loading");
+    await uploadImageToFirebase(context);
+    if (imageDownloadUrl != "") stateNotifier.changeState("done");
   }
 
   Future _showChoiceDialog(BuildContext context) {
@@ -71,6 +73,7 @@ class _AddAdState extends State<AddAd> {
                   ListTile(
                     onTap: () {
                       _openGallery(context);
+                      Navigator.pop(context);
                     },
                     title: Text("Gallery"),
                     leading: Icon(
@@ -85,6 +88,7 @@ class _AddAdState extends State<AddAd> {
                   ListTile(
                     onTap: () {
                       _openCamera(context);
+                      Navigator.pop(context);
                     },
                     title: Text("Camera"),
                     leading: Icon(
@@ -100,16 +104,23 @@ class _AddAdState extends State<AddAd> {
   }
 
   Future uploadImageToFirebase(BuildContext context) async {
-    String fileName = imageFile.path;
-    File file = File(fileName);
-    Reference ref = FirebaseStorage.instance.ref('image_uploads/$fileName');
-
     try {
-      await ref.putFile(file);
-      imageDownloadUrl = await ref.getDownloadURL();
-      print("uploaded");
-    } on FirebaseException catch (e) {
+      String fileName = imageFile.path;
+      File file = File(fileName);
+
+      Reference ref = FirebaseStorage.instance
+          .ref('image_uploads/${Timestamp.now().microsecondsSinceEpoch}');
+      try {
+        await ref.putFile(file);
+
+        imageDownloadUrl = await ref.getDownloadURL();
+        print("uploaded");
+      } on FirebaseException catch (e) {
+        print(e);
+      }
+    } catch (e) {
       print(e);
+      return;
     }
   }
 
@@ -142,15 +153,16 @@ class _AddAdState extends State<AddAd> {
       return;
     }
 
-    adsRef
-        .add({
-          'title': title,
-          'description': description,
-          'location': location,
-          'imageUrl': imageUrl
-        })
-        .then((value) => print("Ads Added"))
-        .catchError((error) => print("Failed to add ad: $error"));
+    adsRef.add({
+      'title': title,
+      'description': description,
+      'location': location,
+      'imageUrl': imageUrl,
+      'timestamp': Timestamp.now().microsecondsSinceEpoch
+    }).then((value) {
+      print("Ads Added");
+      Navigator.pop(context);
+    }).catchError((error) => print("Failed to add ad: $error"));
   }
 
   @override
@@ -169,32 +181,42 @@ class _AddAdState extends State<AddAd> {
         child: Column(
           children: [
             SizedBox(height: 16),
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                labelText: "Title",
-                errorText: titleErrorText,
-                border: OutlineInputBorder(),
+            Container(
+              margin: EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: "Title",
+                  errorText: titleErrorText,
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
             SizedBox(height: 16),
-            TextField(
-              controller: _locationController,
-              decoration: InputDecoration(
-                labelText: "Location",
-                errorText: locationErrorText,
-                border: OutlineInputBorder(),
+            Container(
+              margin: EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _locationController,
+                decoration: InputDecoration(
+                  labelText: "Location",
+                  errorText: locationErrorText,
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
             SizedBox(height: 16),
             Column(
               children: [
                 Text("Description"),
-                TextField(
-                  controller: _descriptionController,
-                  minLines: 3,
-                  maxLines: 10,
-                  decoration: InputDecoration(errorText: descriptionErrorText),
+                Container(
+                  margin: EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _descriptionController,
+                    minLines: 3,
+                    maxLines: 10,
+                    decoration:
+                        InputDecoration(errorText: descriptionErrorText),
+                  ),
                 ),
               ],
             ),
@@ -226,15 +248,20 @@ class _AddAdState extends State<AddAd> {
                 if (value == "done") {
                   return Container(
                     height: 300,
-                    child: Image.file(File(imageFile.path)),
+                    child: InkWell(
+                        onTap: () => _showChoiceDialog(context),
+                        child: Image.file(File(imageFile.path))),
                   );
                 }
 
-                return Container(
-                  height: 300,
-                  width: double.infinity,
-                  child: Center(
-                    child: CircularProgressIndicator(),
+                return InkWell(
+                  onTap: () => _showChoiceDialog(context),
+                  child: Container(
+                    height: 300,
+                    width: double.infinity,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
                 );
               },
