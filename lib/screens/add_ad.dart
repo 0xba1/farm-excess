@@ -171,7 +171,7 @@ class _AddAdState extends State<AddAd> {
       'timestamp': Timestamp.now().microsecondsSinceEpoch
     }).then((value) {
       print("Ads Added");
-      Navigator.pop(context);
+      Navigator.pop(context, 1);
     }).catchError((error) => print("Failed to add ad: $error"));
   }
 

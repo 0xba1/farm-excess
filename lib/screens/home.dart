@@ -20,9 +20,10 @@ class Home extends StatelessWidget {
       backgroundColor: MyColors.lightgrey,
       floatingActionButton: FloatingActionButton(
         backgroundColor: MyColors.mughalgreen,
-        onPressed: () => {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => AddAd()))
+        onPressed: () async => {
+          await Navigator.push(
+              context, MaterialPageRoute(builder: (context) => AddAd())),
+          build(context)
         },
         child: Icon(
           Icons.add,
