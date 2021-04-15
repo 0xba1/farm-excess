@@ -133,6 +133,13 @@ class _AddAdState extends State<AddAd> {
       @required String imageUrl,
       @required String email,
       @required CollectionReference adsRef}) {
+    bool validateEmail(String value) {
+      Pattern pattern =
+          r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+      RegExp regex = new RegExp(pattern);
+      return regex.hasMatch(value);
+    }
+
     if (title == "") {
       setState(() {
         titleErrorText = "Please enter a title;";
@@ -151,7 +158,7 @@ class _AddAdState extends State<AddAd> {
       });
       return;
     }
-    if (email == "") {
+    if (!validateEmail(email)) {
       setState(() {
         locationErrorText = "Please enter an email;";
       });
@@ -213,6 +220,7 @@ class _AddAdState extends State<AddAd> {
             Container(
               margin: EdgeInsets.all(8.0),
               child: TextField(
+                keyboardType: TextInputType.emailAddress,
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: "Email",

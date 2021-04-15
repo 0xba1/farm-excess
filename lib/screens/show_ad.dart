@@ -41,7 +41,7 @@ class ShowAd extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "${elipsis(title, 10)}",
+          "${elipsis(title, 20)}",
           style: TextStyle(fontWeight: FontWeight.w300),
         ),
         backgroundColor: MyColors.lighttaupe,
