@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:farm_excess/screens/image_show.dart';
+import 'package:farm_excess/screens/show_ad.dart';
 import 'package:farm_excess/values/my_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ListItem extends StatelessWidget {
   const ListItem({
@@ -20,6 +22,10 @@ class ListItem extends StatelessWidget {
   final String email;
   final int timestamp;
 
+  void launchUrl(String url) async {
+    await canLaunch(url) ? await launch(url) : throw 'Could not launch $url';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -33,7 +39,16 @@ class ListItem extends StatelessWidget {
             ),
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: InkWell(
-              onTap: () {},
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ShowAd(
+                          title: title,
+                          imageUrl: imageUrl,
+                          description: description,
+                          location: location,
+                          email: email,
+                          timestamp: timestamp))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -44,24 +59,26 @@ class ListItem extends StatelessWidget {
                   SizedBox(
                     height: 20,
                   ),
-                  InkWell(
-                    onTap: () => {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ShowImage(imageUrl: imageUrl)))
-                    },
-                    child: ClipRRect(
-                      child: CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        placeholder: (_, __) => Center(
-                          child: CircularProgressIndicator(),
+                  Center(
+                    child: InkWell(
+                      onTap: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    ShowImage(imageUrl: imageUrl)))
+                      },
+                      child: ClipRRect(
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          placeholder: (_, __) => Center(
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      borderRadius: BorderRadius.circular(10),
+                      splashColor: MyColors.greytaupe,
                     ),
-                    splashColor: MyColors.greytaupe,
                   ),
                   SizedBox(
                     height: 20,
@@ -87,7 +104,13 @@ class ListItem extends StatelessWidget {
                           Icons.mail,
                           color: MyColors.mughalgreen,
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          try {
+                            launchUrl("mailto:$email");
+                          } catch (e) {
+                            print(e);
+                          }
+                        },
                         tooltip: "Send email to farmer.",
                       )
                     ],

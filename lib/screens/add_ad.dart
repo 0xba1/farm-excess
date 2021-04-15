@@ -168,7 +168,7 @@ class _AddAdState extends State<AddAd> {
       'location': location,
       'imageUrl': imageUrl,
       'email': email,
-      'timestamp': Timestamp.now().microsecondsSinceEpoch
+      'timestamp': Timestamp.now().millisecondsSinceEpoch
     }).then((value) {
       print("Ads Added");
       Navigator.pop(context, 1);
@@ -187,7 +187,13 @@ class _AddAdState extends State<AddAd> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text(
+          "Create Ad",
+          style: TextStyle(fontWeight: FontWeight.w300),
+        ),
+        backgroundColor: MyColors.lighttaupe,
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -229,10 +235,19 @@ class _AddAdState extends State<AddAd> {
             ),
             SizedBox(height: 16),
             Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Description"),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Description: ",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
                 Container(
-                  margin: EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(8.0),
                   child: TextField(
                     controller: _descriptionController,
                     minLines: 3,
@@ -244,6 +259,14 @@ class _AddAdState extends State<AddAd> {
               ],
             ),
             SizedBox(height: 64),
+            Center(
+                child: TextButton(
+              child: Text(
+                "Add Photo",
+                style: TextStyle(color: MyColors.lighttaupe, fontSize: 16),
+              ),
+              onPressed: () => _showChoiceDialog(context),
+            )),
             ValueListenableBuilder(
               valueListenable: stateNotifier.state,
               builder: (context, value, child) {
@@ -290,7 +313,9 @@ class _AddAdState extends State<AddAd> {
                 );
               },
             ),
+            SizedBox(height: 64),
             MaterialButton(
+              color: MyColors.kellygreen,
               onPressed: () {
                 addAd(
                     title: _titleController.text,
@@ -300,8 +325,12 @@ class _AddAdState extends State<AddAd> {
                     email: _emailController.text,
                     adsRef: adsRef);
               },
-              child: Text("Create New Ad"),
-            )
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text("Create New Ad"),
+              ),
+            ),
+            SizedBox(height: 64),
           ],
         ),
       ),

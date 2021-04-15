@@ -19,24 +19,25 @@ class Home extends StatelessWidget {
       ),
       backgroundColor: MyColors.lightgrey,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: MyColors.mughalgreen,
+        backgroundColor: MyColors.kellygreen,
         onPressed: () async => {
-          await Navigator.push(
+          Navigator.push(
               context, MaterialPageRoute(builder: (context) => AddAd())),
-          build(context)
         },
         child: Icon(
           Icons.add,
         ),
         tooltip: "Add a new ad!",
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection("ads")
             .orderBy("timestamp", descending: true)
             .snapshots(includeMetadataChanges: true),
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done)
+          print("*****************$snapshot*******************");
+          if (!snapshot.hasData)
             return Center(
               child: CircularProgressIndicator(),
             );
